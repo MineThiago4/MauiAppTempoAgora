@@ -15,6 +15,12 @@ namespace MauiAppTempoAgora
         {
             try
             {
+                if (Connectivity.Current.NetworkAccess != NetworkAccess.Internet)
+                {
+                    await DisplayAlert("Sem conexão", "Você está sem conexão com a internet.", "OK");
+                    return;
+                }
+
                 if (!string.IsNullOrEmpty(txt_cidade.Text))
                 {
 
@@ -30,7 +36,10 @@ namespace MauiAppTempoAgora
                                          $"Nascer do Sol: {t.sunrise} \n" +
                                          $"Por do Sol: {t.sunset} \n" +
                                          $"Temp Máx: {t.temp_max} \n" +
-                                         $"Temp Min: {t.temp_min} \n";
+                                         $"Temp Min: {t.temp_min} \n" +
+                                         $"Clima: {t.description} \n" +
+                                         $"Vento: {t.speed} \n" +
+                                         $"Visibilidade: {t.visibility} \n";
 
                         lbl_res.Text = dados_previsao;
 
@@ -44,6 +53,10 @@ namespace MauiAppTempoAgora
                 {
                     lbl_res.Text = "preencha a cidade";
                 }
+            }
+            catch (CidadeNaoEncontradaException)
+            {
+                await DisplayAlert("Cidade não encontrada", $"A cidade: {txt_cidade.Text} não foi encontrada, tente novamente.", "OK");
             }
             catch (Exception ex)
             {

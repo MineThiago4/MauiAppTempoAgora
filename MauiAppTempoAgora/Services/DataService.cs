@@ -2,23 +2,32 @@
 using Newtonsoft.Json.Linq;
 namespace MauiAppTempoAgora.Services
 {
+    public class CidadeNaoEncontradaException : Exception
+    {
+        public CidadeNaoEncontradaException(string message) : base(message) { }
+    }
+
     public class DataService
     {
         public static async Task<Tempo?> GetPrevisao(string cidade)
         {
             Tempo? t = null;
-
             string chave = "83aa61c0cee3a5dbc3b1186cb82d7c10";
-                string url = $"https://api.openweathermap.org/data/2.5/weather?" +
-                             $"q={cidade}&units=metric&appid={chave}";
+            string url = $"https://api.openweathermap.org/data/2.5/weather?" +
+                         $"q={cidade}&units=metric&appid={chave}";
 
             using (HttpClient client = new HttpClient())
             {
                 HttpResponseMessage resp = await client.GetAsync(url);
+                if (resp.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    string json = await resp.Content.ReadAsStringAsync();
+                    var obj = JObject.Parse(json);
+                    throw new CidadeNaoEncontradaException((string)obj["message"]);
+                }
                 if (resp.IsSuccessStatusCode)
                 {
                     string json = await resp.Content.ReadAsStringAsync();
-
                     var rascunho = JObject.Parse(json);
 
                     DateTime time = new();
